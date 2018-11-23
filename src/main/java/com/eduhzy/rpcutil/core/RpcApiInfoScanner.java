@@ -14,7 +14,6 @@ import java.util.List;
 import static com.alibaba.fastjson.serializer.SerializerFeature.*;
 
 /**
- *
  * @author lewis ren
  * @date 2018-11-15
  */
@@ -75,11 +74,13 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
                                 WriteNullListAsEmpty,
                                 WriteNullStringAsEmpty,
                                 WriteNullBooleanAsFalse));
+                        paramInfo.setJsonObj(true);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-                paramInfo.setIsTrue(rpcParam != null && rpcParam.isRequired() ? 1 : 0);//是否必填
+                //是否必填
+                paramInfo.setIsTrue(rpcParam != null && rpcParam.isRequired() ? 1 : 0);
                 paramInfo.setLength(rpcParam != null && rpcParam.length() != 0 ? rpcParam.length() : defaultLengthByClass(parameter.getType()));
                 paramInfo.setSort(rpcParam != null && rpcParam.sort() != 0 ? rpcParam.sort() : params.size() + 1);
                 paramInfo.setType(parameter.getType().getTypeName());

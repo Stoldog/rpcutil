@@ -20,6 +20,8 @@ public class RpcParamInfo {
 
     private int sort;
 
+    private boolean jsonObj;
+
     private String desc;
 
     public String getName() {
@@ -79,4 +81,11 @@ public class RpcParamInfo {
     }
 
 
+    public boolean isJsonObj() {
+        return jsonObj;
+    }
+
+    public void setJsonObj(boolean jsonObj) {
+        this.jsonObj = jsonObj;
+    }
 }

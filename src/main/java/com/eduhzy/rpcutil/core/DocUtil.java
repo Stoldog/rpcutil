@@ -33,26 +33,17 @@ public class DocUtil {
         putMethodLink(rpcApiInfo, lines);
 
         for (RpcMethodInfo methodInfo : rpcApiInfo.getMethodInfos()) {
-            lines.add("## " + methodInfo.getApiName());
-            lines.add("### 接口地址");
-            lines.add("    " + interfacePath + rpcApiInfo.getServiceName() + "/" + rpcApiInfo.getModuleName() + "/" + methodInfo.getMethodName() + ".jspx");
-            lines.add("");
+            // 添加方法信息
+            putMethodInfo(rpcApiInfo, interfacePath, lines, methodInfo);
 
-            lines.add("### 参数说明");
-            lines.add("```");
-            lines.add("参数说明");
-            for (RpcParamInfo paramInfo : methodInfo.getParamList()) {
+            // 添加方法参数
+            putMethodParam(lines, methodInfo);
 
-                lines.add(fillBlank(paramInfo.getName(), 20) + fillBlank(paramInfo.getType(), 20) + fillBlank(paramInfo.getDesc(), 20));
-            }
-            lines.add("```");
+            // 添加方法返回值
+            putMethodReturnValue(lines, methodInfo);
 
-            lines.add("");
-            lines.add("### 返回值说明");
-            lines.add("```");
-            lines.add(methodInfo.getReturnJson());
-            lines.add("```");
-            lines.add("<hr>");
+            // 添加api方法分界
+            putMethodEndTag(lines);
         }
 
         try {
@@ -60,6 +51,67 @@ public class DocUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 天界方法分界
+     * @param lines
+     */
+    private static void putMethodEndTag(List<String> lines) {
+        lines.add("<hr>");
+        // 空行必须要,否则可能存在瞄点有误的情况(vs code存在)
+        lines.add("");
+    }
+
+    /**
+     * 添加方法返回值说明
+     *
+     * @param lines
+     * @param methodInfo
+     */
+    private static void putMethodReturnValue(List<String> lines, RpcMethodInfo methodInfo) {
+        lines.add("");
+        lines.add("### 返回值说明");
+        lines.add("```");
+        lines.add(methodInfo.getReturnJson());
+        lines.add("```");
+    }
+
+    /**
+     * 添加方法接口说明
+     *
+     * @param rpcApiInfo
+     * @param interfacePath
+     * @param lines
+     * @param methodInfo
+     */
+    private static void putMethodInfo(RpcApiInfo rpcApiInfo, String interfacePath, List<String> lines, RpcMethodInfo methodInfo) {
+        lines.add("## " + methodInfo.getApiName());
+        lines.add("### 接口地址");
+        lines.add("    " + interfacePath + rpcApiInfo.getServiceName() + "/" + rpcApiInfo.getModuleName() + "/" + methodInfo.getMethodName() + ".jspx");
+        lines.add("");
+    }
+
+    /**
+     * 添加方法参数说明
+     *
+     * @param lines
+     * @param methodInfo
+     */
+    private static void putMethodParam(List<String> lines, RpcMethodInfo methodInfo) {
+        lines.add("### 参数说明");
+        lines.add("```");
+        lines.add("参数说明");
+        for (RpcParamInfo paramInfo : methodInfo.getParamList()) {
+            String line = fillBlank(paramInfo.getName(), 20) + fillBlank(paramInfo.getType(), 20);
+            if (paramInfo.isJsonObj()) {
+                lines.add(line);
+                lines.add(fillBlank(paramInfo.getType(), 0));
+            } else {
+                lines.add(line + fillBlank(paramInfo.getDesc(), 20));
+            }
+        }
+        lines.add("```");
     }
 
     /**
@@ -74,7 +126,6 @@ public class DocUtil {
             lines.add(METHOD_LINK.replace("{{methodName}}", methodInfo.getApiName()));
         }
         lines.add("<!-- /TOC -->");
-        lines.add("");
         lines.add("");
     }
 
