@@ -1,9 +1,9 @@
 package com.eduhzy.rpcutil.core;
 
-import com.alibaba.fastjson.JSONObject;
 import com.eduhzy.rpcutil.annotations.RpcApi;
 import com.eduhzy.rpcutil.annotations.RpcMethod;
 import com.eduhzy.rpcutil.annotations.RpcParam;
+import com.google.gson.Gson;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.lang.reflect.Method;
@@ -67,13 +67,15 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
                 paramInfo.setDesc(rpcParam != null ? rpcParam.description() : "");
                 if (rpcParam != null && rpcParam.cls() != Object.class) {
                     try {
-                        paramInfo.setDesc(JSONObject.toJSONString(rpcParam.cls().newInstance(),
-                                PrettyFormat,
-                                WriteMapNullValue,
-                                WriteNullNumberAsZero,
-                                WriteNullListAsEmpty,
-                                WriteNullStringAsEmpty,
-                                WriteNullBooleanAsFalse));
+                        Gson gson = new Gson();
+                        paramInfo.setDesc(gson.toJson(rpcParam.cls().newInstance()));
+//                        paramInfo.setDesc(Json.toJSONString(rpcParam.cls().newInstance(),
+//                                PrettyFormat,
+//                                WriteMapNullValue,
+//                                WriteNullNumberAsZero,
+//                                WriteNullListAsEmpty,
+//                                WriteNullStringAsEmpty,
+//                                WriteNullBooleanAsFalse));
                         paramInfo.setJsonObj(true);
                     } catch (Exception e) {
                         e.printStackTrace();
