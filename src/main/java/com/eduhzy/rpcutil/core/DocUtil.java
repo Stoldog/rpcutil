@@ -23,7 +23,7 @@ public class DocUtil {
 
         List<String> lines = new LinkedList<>();
         for (RpcMethodInfo methodInfo : rpcApiInfo.getMethodInfos()) {
-            lines.add("## "+methodInfo.getServiceName());
+            lines.add("## "+methodInfo.getApiName());
             lines.add("### 接口地址");
             lines.add("    " + interfacePath +rpcApiInfo.getServiceName()+"/"+rpcApiInfo.getModuleName()+"/"+methodInfo.getMethodName()+".jspx");
             lines.add("       ");
