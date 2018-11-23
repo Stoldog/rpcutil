@@ -83,7 +83,7 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
                 paramInfo.setIsTrue(rpcParam != null && rpcParam.isRequired() ? 1 : 0);
                 paramInfo.setLength(rpcParam != null && rpcParam.length() != 0 ? rpcParam.length() : defaultLengthByClass(parameter.getType()));
                 paramInfo.setSort(rpcParam != null && rpcParam.sort() != 0 ? rpcParam.sort() : params.size() + 1);
-                paramInfo.setType(parameter.getType().getTypeName());
+                paramInfo.setType(parameter.getType().getSimpleName());
                 paramInfo.setTypeClass(parameter.getType());
                 params.add(paramInfo);
             }

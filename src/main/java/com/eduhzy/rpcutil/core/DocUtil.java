@@ -55,6 +55,7 @@ public class DocUtil {
 
     /**
      * 天界方法分界
+     *
      * @param lines
      */
     private static void putMethodEndTag(List<String> lines) {
@@ -106,7 +107,7 @@ public class DocUtil {
             String line = fillBlank(paramInfo.getName(), 20) + fillBlank(paramInfo.getType(), 20);
             if (paramInfo.isJsonObj()) {
                 lines.add(line);
-                lines.add(fillBlank(paramInfo.getDesc(), 0));
+                lines.add(fillBlank(paramInfo.getDesc(), 20));
             } else {
                 lines.add(line + fillBlank(paramInfo.getDesc(), 20));
             }
@@ -133,7 +134,8 @@ public class DocUtil {
         if (str.length() >= length) {
             return str;
         }
-        for (int i = 0; i < (length - str.length()); i++) {
+        int size = length - str.length();
+        for (int i = 0; i < size; i++) {
             str += " ";
         }
         return str;
