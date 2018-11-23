@@ -35,7 +35,7 @@ public @interface RpcMethod {
      *
      * @return
      */
-    boolean needIP() default true;
+    boolean needIP() default false;
 
     /**
      * 是否显示

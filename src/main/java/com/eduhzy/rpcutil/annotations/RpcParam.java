@@ -29,7 +29,7 @@ public @interface RpcParam {
      *
      * @return
      */
-    boolean isRequired() default false;
+    boolean isRequired() default true;
 
     /**
      * 长度，默认为0的话，会根据数据类型取通用长度
