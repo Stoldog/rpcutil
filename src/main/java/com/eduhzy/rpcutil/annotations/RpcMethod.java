@@ -46,6 +46,7 @@ public @interface RpcMethod {
 
     /**
      * 返回值
+     *
      * @return
      */
     String returnJson() default "{}";

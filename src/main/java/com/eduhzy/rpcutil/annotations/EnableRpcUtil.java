@@ -16,6 +16,7 @@ import java.lang.annotation.*;
 public @interface EnableRpcUtil {
     @AliasFor("path")
     String value() default "";
+
     @AliasFor("value")
     String path() default "";
 }

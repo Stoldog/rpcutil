@@ -2,7 +2,9 @@ package com.eduhzy.rpcutil.core;
 
 /**
  * 使用者的基础配置类，可由使用者自定义配置
- * Created by lewis ren on 2018-11-22.
+ *
+ * @author lewis ren
+ * @date 2018-11-22
  */
 public class RpcConfig {
     /**
@@ -30,29 +32,29 @@ public class RpcConfig {
      */
     private Package aPackage;
 
-    public RpcConfig(String apiPackPath,String serviceName) {
+    public RpcConfig(String apiPackPath, String serviceName) {
         this.apiPackPath = apiPackPath;
         this.serviceName = serviceName;
         this.aPackage = Package.getPackage(apiPackPath);
     }
 
-    public RpcConfig docPath(String docPath){
+    public RpcConfig docPath(String docPath) {
         this.docPath = docPath;
         return this;
     }
 
-    public RpcConfig apiHost(String apiHost){
+    public RpcConfig apiHost(String apiHost) {
         this.apiHost = apiHost;
         return this;
     }
 
-    public RpcConfig serviceName(String serviceName){
+    public RpcConfig serviceName(String serviceName) {
         this.apiHost = serviceName == null || serviceName.equals("") ? this.apiHost : serviceName;
         return this;
     }
 
-    public RpcConfig aPackage(Package aPackage){
-        this.aPackage = aPackage == null  ? this.aPackage : aPackage;
+    public RpcConfig aPackage(Package aPackage) {
+        this.aPackage = aPackage == null ? this.aPackage : aPackage;
         return this;
     }
 

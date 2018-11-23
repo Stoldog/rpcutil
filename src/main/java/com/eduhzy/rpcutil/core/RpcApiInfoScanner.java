@@ -1,8 +1,6 @@
 package com.eduhzy.rpcutil.core;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.eduhzy.rpcutil.annotations.RpcApi;
 import com.eduhzy.rpcutil.annotations.RpcMethod;
 import com.eduhzy.rpcutil.annotations.RpcParam;
@@ -16,7 +14,9 @@ import java.util.List;
 import static com.alibaba.fastjson.serializer.SerializerFeature.*;
 
 /**
- * Created by lewis ren on 2018-11-15.
+ *
+ * @author lewis ren
+ * @date 2018-11-15
  */
 public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
 
@@ -27,9 +27,11 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
     @Override
     public RpcApiInfo scan(RpcConfig rpcConfig, Class<?> cls) {
         RpcApi rpcApi = AnnotationUtils.findAnnotation(cls, RpcApi.class);
-        if(rpcApi==null){return null;}
-        int appId =  rpcApi.appId();
-        String moduleName =  rpcApi.moduleName();
+        if (rpcApi == null) {
+            return null;
+        }
+        int appId = rpcApi.appId();
+        String moduleName = rpcApi.moduleName();
         String serviceName = rpcApi.serviceName().equals("") ? rpcConfig.getServiceName() : rpcApi.serviceName();
         //1.配置基础属性
         RpcApiInfo info = new RpcApiInfo();
@@ -43,7 +45,9 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
         for (Method method : cls.getDeclaredMethods()) {
             RpcMethod rpcMethod = AnnotationUtils.findAnnotation(method, RpcMethod.class);
             //为空跳过
-            if (rpcMethod == null) {continue;}
+            if (rpcMethod == null) {
+                continue;
+            }
             RpcMethodInfo methodInfo = new RpcMethodInfo();
             methodInfo.setAppId(appId);
             methodInfo.setServiceName(serviceName);
@@ -62,9 +66,10 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
                 RpcParamInfo paramInfo = new RpcParamInfo();
                 paramInfo.setName(rpcParam != null ? rpcParam.name() : parameter.getName());
                 paramInfo.setDesc(rpcParam != null ? rpcParam.description() : "");
-                if(rpcParam != null && rpcParam.cls()!=Object.class){
+                if (rpcParam != null && rpcParam.cls() != Object.class) {
                     try {
                         paramInfo.setDesc(JSONObject.toJSONString(rpcParam.cls().newInstance(),
+                                PrettyFormat,
                                 WriteMapNullValue,
                                 WriteNullNumberAsZero,
                                 WriteNullListAsEmpty,
@@ -76,7 +81,7 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
                 }
                 paramInfo.setIsTrue(rpcParam != null && rpcParam.isRequired() ? 1 : 0);//是否必填
                 paramInfo.setLength(rpcParam != null && rpcParam.length() != 0 ? rpcParam.length() : defaultLengthByClass(parameter.getType()));
-                paramInfo.setSort(rpcParam != null && rpcParam.sort() != 0 ? rpcParam.sort() : params.size()+1);
+                paramInfo.setSort(rpcParam != null && rpcParam.sort() != 0 ? rpcParam.sort() : params.size() + 1);
                 paramInfo.setType(parameter.getType().getTypeName());
                 paramInfo.setTypeClass(parameter.getType());
                 params.add(paramInfo);
@@ -93,17 +98,18 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
 
     /**
      * 默认参数长度
+     *
      * @param cls
      * @return
      */
-    private int defaultLengthByClass(Class cls){
-        if(cls == String.class){
+    private int defaultLengthByClass(Class cls) {
+        if (cls == String.class) {
             return STRING_LENGTH;
-        }else if(cls == Long.class || cls == long.class){
+        } else if (cls == Long.class || cls == long.class) {
             return LONG_LENGTH;
-        }else if(cls == Integer.class || cls == int.class){
+        } else if (cls == Integer.class || cls == int.class) {
             return INT_LENGTH;
-        }else {
+        } else {
             return 16;
         }
     }

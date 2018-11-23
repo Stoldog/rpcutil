@@ -2,7 +2,9 @@ package com.eduhzy.rpcutil.core;
 
 /**
  * 参数信息
- * Created by lewis ren on 2018-11-20.
+ *
+ * @author lewis ren
+ * @date 2018-11-20
  */
 public class RpcParamInfo {
 

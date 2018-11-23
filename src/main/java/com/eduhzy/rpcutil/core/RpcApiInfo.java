@@ -4,7 +4,9 @@ import java.util.List;
 
 /**
  * API信息
- * Created by lewis ren on 2018-11-15.
+ *
+ * @author lewis ren
+ * @date 2018-11-15
  */
 public class RpcApiInfo {
     /**
