@@ -1,17 +1,19 @@
 package com.eduhzy.rpcutil.core;
 
+import com.eduhzy.rpcutil.TypeAdapters;
 import com.eduhzy.rpcutil.annotations.RpcApi;
 import com.eduhzy.rpcutil.annotations.RpcMethod;
 import com.eduhzy.rpcutil.annotations.RpcParam;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.alibaba.fastjson.serializer.SerializerFeature.*;
 
 /**
  * @author lewis ren
@@ -67,15 +69,9 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
                 paramInfo.setDesc(rpcParam != null ? rpcParam.description() : "");
                 if (rpcParam != null && rpcParam.cls() != Object.class) {
                     try {
-                        Gson gson = new Gson();
-                        paramInfo.setDesc(gson.toJson(rpcParam.cls().newInstance()));
-//                        paramInfo.setDesc(Json.toJSONString(rpcParam.cls().newInstance(),
-//                                PrettyFormat,
-//                                WriteMapNullValue,
-//                                WriteNullNumberAsZero,
-//                                WriteNullListAsEmpty,
-//                                WriteNullStringAsEmpty,
-//                                WriteNullBooleanAsFalse));
+                        String desc = getDescJsonString(rpcParam);
+                        paramInfo.setDesc(desc);
+
                         paramInfo.setJsonObj(true);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -97,6 +93,19 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
         }
         info.setMethodInfos(methodList);
         return info;
+    }
+
+    private String getDescJsonString(RpcParam rpcParam) throws InstantiationException, IllegalAccessException {
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(String.class, TypeAdapters.STRING)
+                .registerTypeAdapter(Integer.class, TypeAdapters.INTEGER)
+                .registerTypeAdapter(Double.class, TypeAdapters.DOUBLE)
+                .create();
+
+        String json = gson.toJson(rpcParam.cls().newInstance());
+        JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
+        return new GsonBuilder().setPrettyPrinting().create().toJson(jsonObject);
+
     }
 
     /**

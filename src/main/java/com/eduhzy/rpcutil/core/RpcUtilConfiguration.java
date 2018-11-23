@@ -1,6 +1,5 @@
 package com.eduhzy.rpcutil.core;
 
-import com.alibaba.fastjson.JSON;
 import com.eduhzy.rpcutil.annotations.EnableRpcUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -40,8 +39,7 @@ public class RpcUtilConfiguration implements ApplicationContextAware {
                 list.add(apiInfo);
             }
         }
-        //todo: 该处可将数据导出、自动化发布（暂时注册中心未提供提交数据的方式）
-        System.out.println("Rpc-Util: " + JSON.toJSON(list));
+
         //todo: 该处可以做成可配置项 由使用者自定义生成文档类型、结构等等
         if (rpcConfig.getDocPath() != null && !rpcConfig.getDocPath().equals("")) {
             for (RpcApiInfo rpcApiInfo : list) {
