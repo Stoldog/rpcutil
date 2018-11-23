@@ -106,7 +106,7 @@ public class DocUtil {
             String line = fillBlank(paramInfo.getName(), 20) + fillBlank(paramInfo.getType(), 20);
             if (paramInfo.isJsonObj()) {
                 lines.add(line);
-                lines.add(fillBlank(paramInfo.getType(), 0));
+                lines.add(fillBlank(paramInfo.getDesc(), 0));
             } else {
                 lines.add(line + fillBlank(paramInfo.getDesc(), 20));
             }
