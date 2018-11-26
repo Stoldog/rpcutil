@@ -99,6 +99,7 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(String.class, TypeAdapters.STRING)
                 .registerTypeAdapter(Integer.class, TypeAdapters.INTEGER)
+                .registerTypeAdapter(Long.class, TypeAdapters.LONG)
                 .registerTypeAdapter(Double.class, TypeAdapters.DOUBLE)
                 .create();
 

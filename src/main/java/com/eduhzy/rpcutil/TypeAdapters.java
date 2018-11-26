@@ -7,6 +7,7 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * @author zhongHG
@@ -53,27 +54,10 @@ public class TypeAdapters {
     };
 
 
-    /**
-     * 对于int 和 Integer 类型
-     * 由于 int 类型 有默认值 0，
-     * -- 通常我们无法确定 0 是否具备实际意义
-     * 但是 Integer 的类型 null , 我们可以确定的是 -- 无意义的
-     * <p>
-     * 因此在设计属性的类型是 通常采用 Integer  而不是 int 类型
-     * <p>
-     * 故 由于 int 的 0  具备 实际意义  -- 不进行转换
-     * 而是转换 Integer 类型的 null 值
-     */
-    public static final TypeAdapter<Number> INTEGER = new TypeAdapter<Number>() {
+    public static TypeAdapter<Number> INTEGER = new TypeAdapter<Number>() {
         @Override
         public Number read(JsonReader in) throws IOException {
-            System.out.println(in.peek() + " ----->");
-            if (in.peek() == JsonToken.NULL) {
-                in.nextNull();
-                return null;
-            }
-            if (in.peek() == JsonToken.STRING) {
-                in.nextString();
+            if (TypeAdapters.read(in)) {
                 return null;
             }
             return in.nextInt();
@@ -82,25 +66,51 @@ public class TypeAdapters {
         @Override
         public void write(JsonWriter out, Number value) throws IOException {
             if (value == null) {
-                out.value(EMPTY);
+                out.value(0);
             } else {
                 out.value(value);
             }
         }
     };
 
-    /**
-     * 对于double类型的转换
-     */
+
+    private static final boolean read(JsonReader in) throws IOException {
+        if (in.peek() == JsonToken.NULL) {
+            in.nextNull();
+            return true;
+        }
+        if (in.peek() == JsonToken.STRING) {
+            in.nextString();
+            return true;
+        }
+        return false;
+    }
+
+
+    public static final TypeAdapter<Number> LONG = new TypeAdapter<Number>() {
+        @Override
+        public Number read(JsonReader in) throws IOException {
+            if (TypeAdapters.read(in)) {
+                return null;
+            }
+            return in.nextLong();
+        }
+
+        @Override
+        public void write(JsonWriter out, Number value) throws IOException {
+            if (value == null) {
+                out.value(0);
+            } else {
+                out.value(value);
+            }
+        }
+    };
+
+
     public static final TypeAdapter<Number> DOUBLE = new TypeAdapter<Number>() {
         @Override
         public Number read(JsonReader in) throws IOException {
-            if (in.peek() == JsonToken.NULL) {
-                in.nextNull();
-                return null;
-            }
-            if (in.peek() == JsonToken.STRING) {
-                in.nextString();
+            if (TypeAdapters.read(in)) {
                 return null;
             }
             return in.nextDouble();
@@ -109,7 +119,7 @@ public class TypeAdapters {
         @Override
         public void write(JsonWriter out, Number value) throws IOException {
             if (value == null) {
-                out.value(EMPTY);
+                out.value(0);
             } else {
                 out.value(value);
             }
