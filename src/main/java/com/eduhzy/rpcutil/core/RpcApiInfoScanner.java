@@ -1,6 +1,6 @@
 package com.eduhzy.rpcutil.core;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSON;
 import com.eduhzy.rpcutil.annotations.RpcApi;
 import com.eduhzy.rpcutil.annotations.RpcMethod;
 import com.eduhzy.rpcutil.annotations.RpcParam;
@@ -67,7 +67,8 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
                 paramInfo.setDesc(rpcParam != null ? rpcParam.description() : "");
                 if (rpcParam != null && rpcParam.cls() != Object.class) {
                     try {
-                        paramInfo.setDesc(JSONObject.toJSONString(rpcParam.cls().newInstance(),
+                        Object instance = rpcParam.cls().newInstance();
+                        paramInfo.setDesc(JSON.toJSONString(instance,
                                 PrettyFormat,
                                 WriteMapNullValue,
                                 WriteNullNumberAsZero,
