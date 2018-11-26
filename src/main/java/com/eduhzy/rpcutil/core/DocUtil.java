@@ -106,7 +106,7 @@ public class DocUtil {
         for (RpcParamInfo paramInfo : methodInfo.getParamList()) {
             String line = fillBlank(paramInfo.getName(), 20) + fillBlank(paramInfo.getType(), 20);
             if (paramInfo.isJsonObj()) {
-                lines.add(line);
+                lines.add(line + fillBlank("json 参数说明", 20));
                 lines.add(fillBlank(paramInfo.getDesc(), 20));
             } else {
                 lines.add(line + fillBlank(paramInfo.getDesc(), 20));
