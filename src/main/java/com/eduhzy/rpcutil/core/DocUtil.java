@@ -87,7 +87,7 @@ public class DocUtil {
      * @param methodInfo
      */
     private static void putMethodInfo(RpcApiInfo rpcApiInfo, String interfacePath, List<String> lines, RpcMethodInfo methodInfo) {
-        lines.add("## " + methodInfo.getApiName());
+        lines.add("## " + methodInfo.getApiName().replaceAll(" ", ""));
         lines.add("### 接口地址");
         lines.add("    " + interfacePath + rpcApiInfo.getServiceName() + "/" + rpcApiInfo.getModuleName() + "/" + methodInfo.getMethodName() + ".jspx");
         lines.add("");
@@ -124,7 +124,7 @@ public class DocUtil {
     private static void putMethodLink(RpcApiInfo rpcApiInfo, List<String> lines) {
         lines.add("<!-- TOC -->");
         for (RpcMethodInfo methodInfo : rpcApiInfo.getMethodInfos()) {
-            lines.add(METHOD_LINK.replace("{{methodName}}", methodInfo.getApiName()));
+            lines.add(METHOD_LINK.replace("{{methodName}}", methodInfo.getApiName().replaceAll(" ", "")));
         }
         lines.add("<!-- /TOC -->");
         lines.add("");
