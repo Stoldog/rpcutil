@@ -39,6 +39,11 @@ public class RpcApiInfo {
      */
     private List<RpcMethodInfo> methodInfos;
 
+    /**
+     * 包含有一些相关的配置信息
+     */
+    private RpcConfig config;
+
     public int getAppId() {
         return appId;
     }
@@ -85,5 +90,13 @@ public class RpcApiInfo {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public RpcConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(RpcConfig config) {
+        this.config = config;
     }
 }

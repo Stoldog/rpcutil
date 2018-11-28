@@ -14,9 +14,11 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Import(RpcUtilConfiguration.class)
 public @interface EnableRpcUtil {
+
     @AliasFor("path")
     String value() default "";
 
     @AliasFor("value")
     String path() default "";
+
 }

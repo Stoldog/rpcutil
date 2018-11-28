@@ -69,6 +69,11 @@ public class RpcMethodInfo {
      */
     private String returnJson;
 
+    /**
+     * 所属api
+     */
+    private RpcApiInfo apiInfo;
+
     public int getAppId() {
         return appId;
     }
@@ -163,5 +168,13 @@ public class RpcMethodInfo {
 
     public void setReturnJson(String returnJson) {
         this.returnJson = returnJson;
+    }
+
+    public RpcApiInfo getApiInfo() {
+        return apiInfo;
+    }
+
+    public void setApiInfo(RpcApiInfo apiInfo) {
+        this.apiInfo = apiInfo;
     }
 }

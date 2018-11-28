@@ -9,6 +9,13 @@ package com.eduhzy.rpcutil.core;
  */
 public interface ApiScanner<R> {
 
+    /**
+     * 扫描方法
+     *
+     * @param config 相关文档生成配置
+     * @param obj    被扫描类的class
+     * @return
+     */
     R scan(RpcConfig config, Class<?> obj);
 
 }

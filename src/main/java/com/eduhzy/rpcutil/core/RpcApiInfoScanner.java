@@ -30,9 +30,9 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
         if (rpcApi == null) {
             return null;
         }
-        int appId = rpcApi.appId();
+        int appId = rpcConfig.getAppId();
         String moduleName = rpcApi.moduleName();
-        String serviceName = rpcApi.serviceName().equals("") ? rpcConfig.getServiceName() : rpcApi.serviceName();
+        String serviceName = "".equals(rpcApi.serviceName()) ? rpcConfig.getServiceName() : rpcApi.serviceName();
         //1.配置基础属性
         RpcApiInfo info = new RpcApiInfo();
         info.setAppId(appId);
@@ -40,6 +40,7 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
         info.setServiceName(serviceName);
         info.setTitle(rpcApi.title());
         info.setDescription(rpcApi.description());
+        info.setConfig(rpcConfig);
         //2.获取所有的方法
         List<RpcMethodInfo> methodList = new ArrayList<>();
         for (Method method : cls.getDeclaredMethods()) {
@@ -58,9 +59,12 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
             methodInfo.setIsShow(rpcMethod.isShow() ? 1 : 0);
             methodInfo.setIsNeedAuth(rpcMethod.needAuth() ? 1 : 0);
             methodInfo.setIsNeedIP(rpcMethod.needIP() ? 1 : 0);
+            //每个方法都持有公共的配置及其api
+            //methodInfo.setConfig(rpcConfig);
+            methodInfo.setApiInfo(info);
 
             List<RpcParamInfo> params = new ArrayList<>();
-            //3.获取该方法得参数列表(有注解，则使用注解；没有注解则使用默认配置；
+            //3.获取该方法得参数列表 有注解，则使用注解；没有注解则使用默认配置；
             for (Parameter parameter : method.getParameters()) {
                 RpcParam rpcParam = AnnotationUtils.findAnnotation(parameter, RpcParam.class);
                 RpcParamInfo paramInfo = new RpcParamInfo();

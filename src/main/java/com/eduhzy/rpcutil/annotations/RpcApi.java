@@ -11,13 +11,6 @@ import java.lang.annotation.*;
 public @interface RpcApi {
 
     /**
-     * appId,所属应用
-     *
-     * @return
-     */
-    int appId();
-
-    /**
      * 标题
      *
      * @return
@@ -25,16 +18,24 @@ public @interface RpcApi {
     String title();
 
     /**
-     * @return
-     */
-    String description() default "";
-
-    /**
      * 模块名，默认为RpcServerContext的模块名（暂未实现）
      *
      * @return
      */
     String moduleName();
+
+    /**
+     * appId,所属应用(已废弃,统一使用RpcConfig中的appId)
+     *
+     * @return
+     */
+    @Deprecated
+    int appId() default 0;
+
+    /**
+     * @return
+     */
+    String description() default "";
 
     /**
      * 服务名字,默认为RpcServerContext的服务名
