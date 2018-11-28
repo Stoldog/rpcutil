@@ -62,45 +62,132 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
             //每个方法都持有公共的配置及其api
             //methodInfo.setConfig(rpcConfig);
             methodInfo.setApiInfo(info);
-
+            //3.获取该方法得参数列表(有注解，则使用注解；没有注解则使用默认配置；
             List<RpcParamInfo> params = new ArrayList<>();
-            //3.获取该方法得参数列表 有注解，则使用注解；没有注解则使用默认配置；
-            for (Parameter parameter : method.getParameters()) {
-                RpcParam rpcParam = AnnotationUtils.findAnnotation(parameter, RpcParam.class);
-                RpcParamInfo paramInfo = new RpcParamInfo();
-                paramInfo.setName(rpcParam != null ? rpcParam.name() : parameter.getName());
-                paramInfo.setDesc(rpcParam != null ? rpcParam.description() : "");
-                if (rpcParam != null && rpcParam.cls() != Object.class) {
-                    try {
-                        Object instance = rpcParam.cls().newInstance();
-                        paramInfo.setDesc(JSON.toJSONString(instance,
-                                PrettyFormat,
-                                WriteMapNullValue,
-                                WriteNullNumberAsZero,
-                                WriteNullListAsEmpty,
-                                WriteNullStringAsEmpty,
-                                WriteNullBooleanAsFalse));
-                        paramInfo.setJsonObj(true);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                //是否必填
-                paramInfo.setIsTrue(rpcParam != null && rpcParam.isRequired() ? 1 : 0);
-                paramInfo.setLength(rpcParam != null && rpcParam.length() != 0 ? rpcParam.length() : defaultLengthByClass(parameter.getType()));
-                paramInfo.setSort(rpcParam != null && rpcParam.sort() != 0 ? rpcParam.sort() : params.size() + 1);
-                paramInfo.setType(parameter.getType().getSimpleName());
-                paramInfo.setTypeClass(parameter.getType());
-                params.add(paramInfo);
-            }
+            putMethodParams(method, params);
             methodInfo.setParamList(params);
-            //4.获取返回值列表 todo: 后期可增加返回值列表
-            //methodInfo.setReturnValues();
-            methodInfo.setReturnJson(rpcMethod.returnJson());
+
+            // 添加返回值信息
+            putMethodReturnValue(rpcMethod, methodInfo);
+
             methodList.add(methodInfo);
         }
         info.setMethodInfos(methodList);
         return info;
+    }
+
+    /**
+     * 添加方法参数
+     *
+     * @param method
+     * @param params
+     */
+    private void putMethodParams(Method method, List<RpcParamInfo> params) {
+        for (Parameter parameter : method.getParameters()) {
+            RpcParam rpcParam = AnnotationUtils.findAnnotation(parameter, RpcParam.class);
+            RpcParamInfo paramInfo = new RpcParamInfo();
+            paramInfo.setName(rpcParam != null ? rpcParam.name() : parameter.getName());
+            paramInfo.setDesc(rpcParam != null ? rpcParam.description() : "");
+            if (rpcParam != null && rpcParam.cls() != Object.class) {
+                try {
+                    Object instance = rpcParam.cls().newInstance();
+                    paramInfo.setDesc(JSON.toJSONString(instance,
+                            PrettyFormat,
+                            WriteMapNullValue,
+                            WriteNullNumberAsZero,
+                            WriteNullListAsEmpty,
+                            WriteNullStringAsEmpty,
+                            WriteNullBooleanAsFalse));
+                    paramInfo.setJsonObj(true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            //是否必填
+            paramInfo.setIsTrue(rpcParam != null && rpcParam.isRequired() ? 1 : 0);
+            paramInfo.setLength(rpcParam != null && rpcParam.length() != 0 ? rpcParam.length() : defaultLengthByClass(parameter.getType()));
+            paramInfo.setSort(rpcParam != null && rpcParam.sort() != 0 ? rpcParam.sort() : params.size() + 1);
+            paramInfo.setType(parameter.getType().getSimpleName());
+            paramInfo.setTypeClass(parameter.getType());
+            params.add(paramInfo);
+        }
+    }
+
+    private void putMethodReturnValue(RpcMethod rpcMethod, RpcMethodInfo methodInfo) {
+        Class clazz = rpcMethod.returnClass();
+        if (clazz != Object.class) {
+            try {
+                if (rpcMethod.collectionType()) {
+                    List list = new ArrayList();
+                    Object o = newInstance(clazz);
+                    list.add(o);
+                    methodInfo.setReturnJson(JSON.toJSONString(list,
+                            PrettyFormat,
+                            WriteMapNullValue,
+                            WriteNullNumberAsZero,
+                            WriteNullListAsEmpty,
+                            WriteNullStringAsEmpty,
+                            WriteNullBooleanAsFalse));
+                } else {
+                    Object o = newInstance(clazz);
+                    methodInfo.setReturnJson(JSON.toJSONString(o,
+                            PrettyFormat,
+                            WriteMapNullValue,
+                            WriteNullNumberAsZero,
+                            WriteNullListAsEmpty,
+                            WriteNullStringAsEmpty,
+                            WriteNullBooleanAsFalse));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } else {
+            methodInfo.setReturnJson(rpcMethod.returnJson());
+        }
+    }
+
+
+    /**
+     * 返回值处理
+     *
+     * @param cls cls
+     * @return object
+     * @throws Exception exception
+     */
+    private Object newInstance(Class cls) throws Exception {
+        if (cls.isArray()) {
+            Object instance = instance(cls.getComponentType());
+            Object[] objects = new Object[1];
+            objects[0] = instance;
+            return objects;
+        } else {
+            return instance(cls);
+        }
+    }
+
+    /**
+     * 返回值处理
+     *
+     * @param cls cls
+     * @return object
+     * @throws Exception exception
+     */
+    private Object instance(Class cls) throws Exception {
+        if (cls == Integer.class || cls == Short.class || cls == Byte.class
+                || cls == int.class || cls == short.class || cls == byte.class) {
+            return 0;
+        } else if (cls == Double.class || cls == Float.class || cls == double.class || cls == float.class) {
+            return 0.0D;
+        } else if (cls == Boolean.class || cls == boolean.class) {
+            return false;
+        } else if (cls == Long.class || cls == long.class) {
+            return 0L;
+        } else if (cls == Character.class || cls == char.class) {
+            return "";
+        } else {
+            return cls.newInstance();
+        }
     }
 
     /**
