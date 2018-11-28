@@ -45,6 +45,22 @@ public @interface RpcMethod {
     boolean isShow() default true;
 
     /**
+     * 返回值的 class
+     * List<JavaBean> 应该是JavaBean.class
+     * 优先级高于 returnJson
+     *
+     * @return
+     */
+    Class returnClass() default Object.class;
+
+    /**
+     * 是否是集合类型或者是数组类型
+     *
+     * @return
+     */
+    boolean collectionType() default false;
+
+    /**
      * 返回值
      *
      * @return
