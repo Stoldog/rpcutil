@@ -3,14 +3,11 @@ package com.eduhzy.rpcutil.tools;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.eduhzy.rpcutil.core.RpcApiInfo;
-import com.eduhzy.rpcutil.core.RpcConfig;
 import com.eduhzy.rpcutil.core.RpcMethodInfo;
 import com.eduhzy.rpcutil.core.RpcParamInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -103,7 +100,7 @@ public class DocUtil {
 
         //遍历配置文件(生成文档)
         prototypeDocs.stream()
-                .forEach(doc -> generateMarkDownPrototypeDoc(doc,rpcMethodInfoMap,genDocPath,defaultInterfacePath));
+                .forEach(doc -> generateMarkDownPrototypeDoc(doc, rpcMethodInfoMap, genDocPath, defaultInterfacePath));
     }
 
     /**
@@ -114,10 +111,10 @@ public class DocUtil {
      * @param genDocPath
      * @param defaultInterfacePath
      */
-    public static void generateMarkDownPrototypeListDoc(String docListJson,List<RpcApiInfo> apiInfos,
+    public static void generateMarkDownPrototypeListDoc(String docListJson, List<RpcApiInfo> apiInfos,
                                                         String genDocPath, String defaultInterfacePath) {
         List<PrototypeDoc> docList = JSON.parseArray(docListJson, PrototypeDoc.class);
-        generateMarkDownPrototypeListDoc(docList,apiInfos,  genDocPath, defaultInterfacePath);
+        generateMarkDownPrototypeListDoc(docList, apiInfos, genDocPath, defaultInterfacePath);
     }
 
     /**
@@ -128,14 +125,14 @@ public class DocUtil {
      * @param genDocPath
      * @param defaultInterfacePath
      */
-    public static void generateMarkDownPrototypeDoc(PrototypeDoc doc,Map<String,RpcMethodInfo> methodInfoMap,
-                                                    String genDocPath,String defaultInterfacePath){
+    public static void generateMarkDownPrototypeDoc(PrototypeDoc doc, Map<String, RpcMethodInfo> methodInfoMap,
+                                                    String genDocPath, String defaultInterfacePath) {
         List<String> lines = new LinkedList<>();
         Path file = Paths.get(genDocPath + "编号" + doc.getPrototypeNo() + "_" + doc.getPrototypeName() + "_页面接口文档.md");
         //生成原型信息
         putProtoInfoTag(lines, doc);
         //生成原型接口信息
-        defaultInterfacePath =  StringUtils.endsWith(defaultInterfacePath , "/") ? defaultInterfacePath : defaultInterfacePath + "/";
+        defaultInterfacePath = StringUtils.endsWith(defaultInterfacePath, "/") ? defaultInterfacePath : defaultInterfacePath + "/";
         putInterfaceInfoListTag(lines, doc, defaultInterfacePath, methodInfoMap);
         try {
             Files.write(file, lines, Charset.forName("UTF-8"));
@@ -152,10 +149,10 @@ public class DocUtil {
      * @param genDocPath
      * @param defaultInterfacePath
      */
-    public static void generateMarkDownPrototypeDoc(String docJson,Map<String,RpcMethodInfo> methodInfoMap,
-                                                    String genDocPath,String defaultInterfacePath){
-        PrototypeDoc prototypeDoc = JSONObject.parseObject(docJson,PrototypeDoc.class);
-        generateMarkDownPrototypeDoc(prototypeDoc,methodInfoMap,genDocPath,defaultInterfacePath);
+    public static void generateMarkDownPrototypeDoc(String docJson, Map<String, RpcMethodInfo> methodInfoMap,
+                                                    String genDocPath, String defaultInterfacePath) {
+        PrototypeDoc prototypeDoc = JSONObject.parseObject(docJson, PrototypeDoc.class);
+        generateMarkDownPrototypeDoc(prototypeDoc, methodInfoMap, genDocPath, defaultInterfacePath);
     }
 
     /**
@@ -208,7 +205,7 @@ public class DocUtil {
 
         //如果url是http开头 则为 第三方模块的接口
         if (StringUtils.startsWith(doc.getMethodName(), HTTP_HEAD) || StringUtils.startsWith(doc.getMethodName(), HTTPS_HEAD)) {
-            str ="  "+ INTERFACE_LINK.replace("{{desc}}", doc.getDesc() == null ? "未设置接口描述" : doc.getDesc())
+            str = "  " + INTERFACE_LINK.replace("{{desc}}", doc.getDesc() == null ? "未设置接口描述" : doc.getDesc())
                     .replace("{{name}}", doc.getInterfaceName() == null ? "未设置接口名" : doc.getInterfaceName())
                     .replace("{{url}}", doc.getMethodName());
             return str;
@@ -219,8 +216,8 @@ public class DocUtil {
         if (rpcMethodInfo != null) {
             RpcApiInfo info = rpcMethodInfo.getApiInfo();
             str = INTERFACE_LINK.replace("{{desc}}", doc.getDesc() == null ? "未设置接口描述" : doc.getDesc())
-                    .replace("{{name}}", rpcMethodInfo.getApiName())
-                    .replace("{{url}}", defaultInterfacePath + info.getTitle() + "_" + info.getModuleName() + "_接口文档.md#" + rpcMethodInfo.getApiName());
+                    .replace("{{name}}", rpcMethodInfo.getApiName().replaceAll(" ", ""))
+                    .replace("{{url}}", defaultInterfacePath + info.getTitle() + "_" + info.getModuleName() + "_接口文档.md#" + rpcMethodInfo.getApiName().replaceAll(" ", ""));
         }
         return str;
     }
@@ -259,7 +256,7 @@ public class DocUtil {
      * @param methodInfo
      */
     private static void putMethodInfo(RpcApiInfo rpcApiInfo, String interfacePath, List<String> lines, RpcMethodInfo methodInfo) {
-        lines.add("## " + methodInfo.getApiName());
+        lines.add("## " + methodInfo.getApiName().replaceAll(" ", ""));
         lines.add("### 接口地址");
         lines.add("    " + interfacePath + rpcApiInfo.getServiceName() + "/" + rpcApiInfo.getModuleName() + "/" + methodInfo.getMethodName() + ".jspx");
         lines.add("");
@@ -296,7 +293,7 @@ public class DocUtil {
     private static void putMethodLink(RpcApiInfo rpcApiInfo, List<String> lines) {
         lines.add("<!-- TOC -->");
         for (RpcMethodInfo methodInfo : rpcApiInfo.getMethodInfos()) {
-            lines.add(METHOD_LINK.replace("{{methodName}}", methodInfo.getApiName()));
+            lines.add(METHOD_LINK.replace("{{methodName}}", methodInfo.getApiName().replaceAll(" ", "")));
         }
         lines.add("<!-- /TOC -->");
         lines.add("");
