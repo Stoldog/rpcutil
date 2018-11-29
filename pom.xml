@@ -22,11 +22,17 @@
 
     <distributionManagement>
         <repository>
-            <id>localRepository</id>
-            <url>file:D:/repo</url>
+            <id>hzy_releases</id>
+            <name>Nexus Releases Repository Pro</name>
+            <url>http://maven.eduhzy.net:1560/repository/hzy_releases/</url>
         </repository>
-    </distributionManagement>
 
+        <snapshotRepository>
+            <id>hzy_snapshots</id>
+            <name>Nexus Snapshots Repository Pro</name>
+            <url>http://maven.eduhzy.net:1560/repository/hzy_snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
     <dependencies>
 
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-core -->
@@ -53,18 +59,6 @@
             <version>3.4</version>
         </dependency>
     </dependencies>
-
-    <repositories>
-        <!--<repository>
-            <id>in-project</id>
-            <name>In Project Repo</name>
-            <url>file://${project.basedir}/lib</url>
-        </repository>-->
-        <repository>
-            <id>hzy_nexus</id>
-            <url>rl>http://maven.eduhzy.net:1560/repository/maven-public/</url>
-        </repository>
-    </repositories>
 
     <build>
         <plugins>
