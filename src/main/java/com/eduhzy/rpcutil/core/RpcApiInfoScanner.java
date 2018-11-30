@@ -2,14 +2,21 @@ package com.eduhzy.rpcutil.core;
 
 import com.alibaba.fastjson.JSON;
 import com.eduhzy.rpcutil.annotations.RpcApi;
+import com.eduhzy.rpcutil.annotations.RpcField;
 import com.eduhzy.rpcutil.annotations.RpcMethod;
 import com.eduhzy.rpcutil.annotations.RpcParam;
+import com.eduhzy.rpcutil.tools.InstanceUtil;
+import com.eduhzy.rpcutil.tools.StringUtil;
 import org.springframework.core.annotation.AnnotationUtils;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.alibaba.fastjson.serializer.SerializerFeature.*;
 
@@ -20,9 +27,15 @@ import static com.alibaba.fastjson.serializer.SerializerFeature.*;
  */
 public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
 
-    public static final int STRING_LENGTH = 50;
-    public static final int LONG_LENGTH = 20;
-    public static final int INT_LENGTH = 11;
+    private static final int STRING_LENGTH = 50;
+
+    private static final int LONG_LENGTH = 20;
+
+    private static final int INT_LENGTH = 11;
+
+    private static final String JSON_START = "{,]";
+
+    private static final String JSON_END = "}";
 
     @Override
     public RpcApiInfo scan(RpcConfig rpcConfig, Class<?> cls) {
@@ -60,7 +73,6 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
             methodInfo.setIsNeedAuth(rpcMethod.needAuth() ? 1 : 0);
             methodInfo.setIsNeedIP(rpcMethod.needIP() ? 1 : 0);
             //每个方法都持有公共的配置及其api
-            //methodInfo.setConfig(rpcConfig);
             methodInfo.setApiInfo(info);
             //3.获取该方法得参数列表(有注解，则使用注解；没有注解则使用默认配置；
             List<RpcParamInfo> params = new ArrayList<>();
@@ -90,14 +102,8 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
             paramInfo.setDesc(rpcParam != null ? rpcParam.description() : "");
             if (rpcParam != null && rpcParam.cls() != Object.class) {
                 try {
-                    Object instance = rpcParam.cls().newInstance();
-                    paramInfo.setDesc(JSON.toJSONString(instance,
-                            PrettyFormat,
-                            WriteMapNullValue,
-                            WriteNullNumberAsZero,
-                            WriteNullListAsEmpty,
-                            WriteNullStringAsEmpty,
-                            WriteNullBooleanAsFalse));
+                    String json = getJsonSample(rpcParam.cls(), rpcParam.collectionType());
+                    paramInfo.setDesc(json);
                     paramInfo.setJsonObj(true);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -113,31 +119,137 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
         }
     }
 
+
+    /**
+     * 获取  json  示例
+     *
+     * @param cls
+     * @param collectionType
+     * @return
+     * @throws Exception
+     */
+    private String getJsonSample(Class cls, boolean collectionType) throws Exception {
+        Object instance = InstanceUtil.newInstance(cls, collectionType);
+
+        // 格式化 json
+        String sample = JSON.toJSONString(instance,
+                PrettyFormat, WriteMapNullValue,
+                WriteNullNumberAsZero, WriteNullListAsEmpty,
+                WriteNullStringAsEmpty, WriteNullBooleanAsFalse);
+
+        return putJsonFieldComment(cls, sample);
+//        // 添加 json 注释
+//        List<String> list = putJsonFieldComment(cls, sample);
+//        // 重新组装 json
+//        // TODO: 2018-11-30  如果需要改成功 java 7,此处需更改 api
+//        sample = String.join("", list);
+//        return sample;
+    }
+
+
+    /**
+     * 添加 json 字段注释
+     *
+     * @param cls
+     * @param sample jsonSample
+     * @return jsonList
+     */
+    private String putJsonFieldComment(Class cls, String sample) throws Exception {
+
+        Field[] fields = cls.getDeclaredFields();
+
+        byte[] bytes = sample.getBytes("utf-8");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)));
+        StringBuilder builder = new StringBuilder();
+        String line;
+        Stack<String> stack = new Stack<>();
+        while ((line = reader.readLine()) != null) {
+            String noBlankStr = line.trim();
+            if (noBlankStr.equals("[") || noBlankStr.equals("{")) {
+                stack.push("");
+                builder.append(line).append("\r\n");
+            } else if ("false".equals(noBlankStr)) {
+                builder.append(line).append("\r\n");
+            } else if (noBlankStr.contains("}") || noBlankStr.contains("]")) {
+                // 删除父节点
+                builder.append(line).append("\r\n");
+                stack.pop();
+            } else if (noBlankStr.length() > 2 && (noBlankStr.contains("[") || noBlankStr.contains("{"))) {
+                // 添加父节点
+                String key = noBlankStr.split("\"")[1];
+                builder.append(line).append("\r\n");
+                stack.push(key);
+            } else {
+                AtomicInteger count = new AtomicInteger(0);
+                String parentKey = findRecentlyNode(stack, noBlankStr, count);
+                pushFieldComment(fields, builder, line, parentKey);
+                for (int i = 0; i < count.get(); i++) {
+                    stack.push("");
+                }
+                stack.push(parentKey);
+            }
+        }
+
+        return builder.toString();
+    }
+
+    // TODO: 2018-11-30 有bug
+    
+    private String findRecentlyNode(Stack<String> stack, String noBlankStr, AtomicInteger count) {
+        String parentKey = "";
+
+        int size = stack.size();
+        for (int i = 0; i < stack.size(); i++) {
+            String a = stack.pop();
+            count.incrementAndGet();
+            if (Objects.equals(a, "")) {
+                continue;
+            }
+            parentKey = a;
+            break;
+        }
+        String s = noBlankStr.split("\"")[1];
+        if ("".equals(parentKey)) {
+            return s;
+        } else if (count.get() ==size ) {
+            return s;
+        } else {
+            return parentKey;
+        }
+    }
+
+    private void pushFieldComment(Field[] fields, StringBuilder builder, String line, String parentKey) {
+        for (Field field : fields) {
+            if (Objects.equals(field.getName(), parentKey)) {
+                RpcField annotation = field.getAnnotation(RpcField.class);
+
+                if (annotation == null) {
+                    return;
+                }
+                Class paramClass = annotation.paramClass();
+                String str = "//" + annotation.description();
+                if (paramClass != null && paramClass != Object.class) {
+//                    builder.append(StringUtil.fillBlank(line, 25) + str).append("\r\n");
+                    pushFieldComment(paramClass.getDeclaredFields(), builder, line, line.split("\"")[1]);
+                } else {
+                    builder.append(StringUtil.fillBlank(line, 25) + str).append("\r\n");
+                }
+            }
+        }
+    }
+
+    /**
+     * 添加 方法 返回值
+     *
+     * @param rpcMethod
+     * @param methodInfo
+     */
     private void putMethodReturnValue(RpcMethod rpcMethod, RpcMethodInfo methodInfo) {
         Class clazz = rpcMethod.returnClass();
         if (clazz != Object.class) {
             try {
-                if (rpcMethod.collectionType()) {
-                    List list = new ArrayList();
-                    Object o = newInstance(clazz);
-                    list.add(o);
-                    methodInfo.setReturnJson(JSON.toJSONString(list,
-                            PrettyFormat,
-                            WriteMapNullValue,
-                            WriteNullNumberAsZero,
-                            WriteNullListAsEmpty,
-                            WriteNullStringAsEmpty,
-                            WriteNullBooleanAsFalse));
-                } else {
-                    Object o = newInstance(clazz);
-                    methodInfo.setReturnJson(JSON.toJSONString(o,
-                            PrettyFormat,
-                            WriteMapNullValue,
-                            WriteNullNumberAsZero,
-                            WriteNullListAsEmpty,
-                            WriteNullStringAsEmpty,
-                            WriteNullBooleanAsFalse));
-                }
+                String json = getJsonSample(clazz, rpcMethod.collectionType());
+                methodInfo.setReturnJson(json);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -147,48 +259,6 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
         }
     }
 
-
-    /**
-     * 返回值处理
-     *
-     * @param cls cls
-     * @return object
-     * @throws Exception exception
-     */
-    private Object newInstance(Class cls) throws Exception {
-        if (cls.isArray()) {
-            Object instance = instance(cls.getComponentType());
-            Object[] objects = new Object[1];
-            objects[0] = instance;
-            return objects;
-        } else {
-            return instance(cls);
-        }
-    }
-
-    /**
-     * 返回值处理
-     *
-     * @param cls cls
-     * @return object
-     * @throws Exception exception
-     */
-    private Object instance(Class cls) throws Exception {
-        if (cls == Integer.class || cls == Short.class || cls == Byte.class
-                || cls == int.class || cls == short.class || cls == byte.class) {
-            return 0;
-        } else if (cls == Double.class || cls == Float.class || cls == double.class || cls == float.class) {
-            return 0.0D;
-        } else if (cls == Boolean.class || cls == boolean.class) {
-            return false;
-        } else if (cls == Long.class || cls == long.class) {
-            return 0L;
-        } else if (cls == Character.class || cls == char.class) {
-            return "";
-        } else {
-            return cls.newInstance();
-        }
-    }
 
     /**
      * 默认参数长度

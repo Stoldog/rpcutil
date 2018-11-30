@@ -60,11 +60,6 @@ public class RpcMethodInfo {
     private List<RpcParamInfo> paramList;
 
     /**
-     * 返回值列表
-     */
-    private List<RpcReturnValue> returnValues;
-
-    /**
      * 返回值json
      */
     private String returnJson;
@@ -154,13 +149,6 @@ public class RpcMethodInfo {
         this.paramList = paramList;
     }
 
-    public List<RpcReturnValue> getReturnValues() {
-        return returnValues;
-    }
-
-    public void setReturnValues(List<RpcReturnValue> returnValues) {
-        this.returnValues = returnValues;
-    }
 
     public String getReturnJson() {
         return returnJson;

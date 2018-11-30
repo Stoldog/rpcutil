@@ -49,4 +49,11 @@ public @interface RpcParam {
      * json转换
      */
     Class<?> cls() default Object.class;
+
+    /**
+     * 是否是集合类型
+     *
+     * @return
+     */
+    boolean collectionType() default false;
 }

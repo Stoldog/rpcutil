@@ -273,12 +273,12 @@ public class DocUtil {
         lines.add("```");
         lines.add("参数说明");
         for (RpcParamInfo paramInfo : methodInfo.getParamList()) {
-            String line = fillBlank(paramInfo.getName(), 20) + fillBlank(paramInfo.getType(), 20);
+            String line = StringUtil.fillBlank(paramInfo.getName(), 20) + StringUtil.fillBlank(paramInfo.getType(), 20);
             if (paramInfo.isJsonObj()) {
-                lines.add(line + fillBlank("json 参数说明", 20));
-                lines.add(fillBlank(paramInfo.getDesc(), 20));
+                lines.add(line + StringUtil.fillBlank("json 参数说明", 20));
+                lines.add(StringUtil.fillBlank(paramInfo.getDesc(), 20));
             } else {
-                lines.add(line + fillBlank(paramInfo.getDesc(), 20));
+                lines.add(line + StringUtil.fillBlank(paramInfo.getDesc(), 20));
             }
         }
         lines.add("```");
@@ -299,21 +299,4 @@ public class DocUtil {
         lines.add("");
     }
 
-    /**
-     * 填空格
-     *
-     * @param str
-     * @param length
-     * @return
-     */
-    private static String fillBlank(String str, int length) {
-        if (str.length() >= length) {
-            return str;
-        }
-        int size = length - str.length();
-        for (int i = 0; i < size; i++) {
-            str += " ";
-        }
-        return str;
-    }
 }
