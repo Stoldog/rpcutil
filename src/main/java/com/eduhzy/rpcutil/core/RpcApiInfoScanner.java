@@ -2,21 +2,17 @@ package com.eduhzy.rpcutil.core;
 
 import com.alibaba.fastjson.JSON;
 import com.eduhzy.rpcutil.annotations.RpcApi;
-import com.eduhzy.rpcutil.annotations.RpcField;
 import com.eduhzy.rpcutil.annotations.RpcMethod;
 import com.eduhzy.rpcutil.annotations.RpcParam;
 import com.eduhzy.rpcutil.tools.InstanceUtil;
-import com.eduhzy.rpcutil.tools.StringUtil;
+import com.eduhzy.rpcutil.tools.JsonUtil;
 import org.springframework.core.annotation.AnnotationUtils;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.alibaba.fastjson.serializer.SerializerFeature.*;
 
@@ -130,112 +126,15 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
      */
     private String getJsonSample(Class cls, boolean collectionType) throws Exception {
         Object instance = InstanceUtil.newInstance(cls, collectionType);
-
+        Field[] fields = cls.getDeclaredFields();
         // 格式化 json
         String sample = JSON.toJSONString(instance,
                 PrettyFormat, WriteMapNullValue,
                 WriteNullNumberAsZero, WriteNullListAsEmpty,
                 WriteNullStringAsEmpty, WriteNullBooleanAsFalse);
 
-        return putJsonFieldComment(cls, sample);
-//        // 添加 json 注释
-//        List<String> list = putJsonFieldComment(cls, sample);
-//        // 重新组装 json
-//        // TODO: 2018-11-30  如果需要改成功 java 7,此处需更改 api
-//        sample = String.join("", list);
-//        return sample;
-    }
+        return JsonUtil.putJsonComment(fields, sample);
 
-
-    /**
-     * 添加 json 字段注释
-     *
-     * @param cls
-     * @param sample jsonSample
-     * @return jsonList
-     */
-    private String putJsonFieldComment(Class cls, String sample) throws Exception {
-
-        Field[] fields = cls.getDeclaredFields();
-
-        byte[] bytes = sample.getBytes("utf-8");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)));
-        StringBuilder builder = new StringBuilder();
-        String line;
-        Stack<String> stack = new Stack<>();
-        while ((line = reader.readLine()) != null) {
-            String noBlankStr = line.trim();
-            if (noBlankStr.equals("[") || noBlankStr.equals("{")) {
-                stack.push("");
-                builder.append(line).append("\r\n");
-            } else if ("false".equals(noBlankStr)) {
-                builder.append(line).append("\r\n");
-            } else if (noBlankStr.contains("}") || noBlankStr.contains("]")) {
-                // 删除父节点
-                builder.append(line).append("\r\n");
-                stack.pop();
-            } else if (noBlankStr.length() > 2 && (noBlankStr.contains("[") || noBlankStr.contains("{"))) {
-                // 添加父节点
-                String key = noBlankStr.split("\"")[1];
-                builder.append(line).append("\r\n");
-                stack.push(key);
-            } else {
-                AtomicInteger count = new AtomicInteger(0);
-                String parentKey = findRecentlyNode(stack, noBlankStr, count);
-                pushFieldComment(fields, builder, line, parentKey);
-                for (int i = 0; i < count.get(); i++) {
-                    stack.push("");
-                }
-                stack.push(parentKey);
-            }
-        }
-
-        return builder.toString();
-    }
-
-    // TODO: 2018-11-30 有bug
-    
-    private String findRecentlyNode(Stack<String> stack, String noBlankStr, AtomicInteger count) {
-        String parentKey = "";
-
-        int size = stack.size();
-        for (int i = 0; i < stack.size(); i++) {
-            String a = stack.pop();
-            count.incrementAndGet();
-            if (Objects.equals(a, "")) {
-                continue;
-            }
-            parentKey = a;
-            break;
-        }
-        String s = noBlankStr.split("\"")[1];
-        if ("".equals(parentKey)) {
-            return s;
-        } else if (count.get() ==size ) {
-            return s;
-        } else {
-            return parentKey;
-        }
-    }
-
-    private void pushFieldComment(Field[] fields, StringBuilder builder, String line, String parentKey) {
-        for (Field field : fields) {
-            if (Objects.equals(field.getName(), parentKey)) {
-                RpcField annotation = field.getAnnotation(RpcField.class);
-
-                if (annotation == null) {
-                    return;
-                }
-                Class paramClass = annotation.paramClass();
-                String str = "//" + annotation.description();
-                if (paramClass != null && paramClass != Object.class) {
-//                    builder.append(StringUtil.fillBlank(line, 25) + str).append("\r\n");
-                    pushFieldComment(paramClass.getDeclaredFields(), builder, line, line.split("\"")[1]);
-                } else {
-                    builder.append(StringUtil.fillBlank(line, 25) + str).append("\r\n");
-                }
-            }
-        }
     }
 
     /**

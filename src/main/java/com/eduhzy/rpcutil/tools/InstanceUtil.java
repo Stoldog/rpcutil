@@ -45,7 +45,7 @@ public class InstanceUtil {
      * @return object
      * @throws Exception exception
      */
-    public static Object instance(Class cls) throws Exception {
+    public static <T> Object instance(Class<T> cls) throws Exception {
         if (cls == Integer.class || cls == Short.class || cls == Byte.class
                 || cls == int.class || cls == short.class || cls == byte.class) {
             return 0;
@@ -58,28 +58,43 @@ public class InstanceUtil {
         } else if (cls == Character.class || cls == char.class) {
             return "";
         } else {
-            Object instance = cls.newInstance();
 
-            Field[] fields = cls.getDeclaredFields();
-            for (Field field : fields) {
-
-                RpcField annotation = field.getAnnotation(RpcField.class);
-                if (annotation == null) {
-                    continue;
-                }
-                // set 方法
-                Class clazz = annotation.paramClass();
-
-                if (clazz != null && clazz != Object.class) {
-                    String name = "set_" + field.getName();
-                    // 调用 set 方法
-                    Object o = InstanceUtil.newInstance(clazz, annotation.collectionType());
-                    Method method = cls.getMethod(StringUtil.toCamelCase(name), field.getType());
-                    method.invoke(instance, o);
-                }
-            }
+            T instance = cls.newInstance();
+            putSomeFieldsValue(cls, instance);
             return instance;
         }
     }
 
+
+    /**
+     * put 部分 javaBean 中集合类型属性的值,
+     * 当 javaBean 中都为基础类型(包装类型)时,该方法则无属性满足下述条件
+     *
+     * @param cls      class
+     * @param instance instance
+     * @param <T>      T
+     * @throws Exception exception
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> void putSomeFieldsValue(Class<T> cls, T instance) throws Exception {
+        Field[] fields = cls.getDeclaredFields();
+        for (Field field : fields) {
+            RpcField annotation = field.getAnnotation(RpcField.class);
+
+            if (annotation != null && annotation.paramClass() != Object.class) {
+                Class fieldClass = annotation.paramClass();
+                T fieldInstance;
+
+                if (fieldClass == cls) {
+                    fieldInstance = (T) fieldClass.newInstance();
+                } else {
+                    fieldInstance = (T) newInstance(fieldClass, annotation.collectionType());
+                }
+
+                String methodName = StringUtil.toCamelCase("set_" + field.getName());
+                Method method = cls.getMethod(methodName, field.getType());
+                method.invoke(instance, fieldInstance);
+            }
+        }
+    }
 }

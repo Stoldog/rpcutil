@@ -180,7 +180,7 @@ public class DocUtil {
     private static void putInterfaceInfoListTag(List<String> lines, PrototypeDoc doc, String defaultInterfacePath, Map<String, RpcMethodInfo> map) {
         lines.add("## 接口列表");
         lines.add("<table>");
-        lines.add("    <tr><td width=\"20%\">名字(作用)</td><td width=\"80%\">地址</td></tr>");
+        lines.add("    <tr><td width=\"60%\">名字(作用)</td><td width=\"40%\">地址</td></tr>");
         for (InterfaceDoc interfaceDoc : doc.getInterfaceDocList()) {
             //添加单个接口信息
             lines.add(putInterfaceInfoTag(interfaceDoc, defaultInterfacePath, map));
