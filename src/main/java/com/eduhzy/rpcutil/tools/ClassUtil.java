@@ -3,14 +3,17 @@ package com.eduhzy.rpcutil.tools;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Stream;
 
 /**
  * 网上寻找到的扫描包下类的工具类
@@ -203,5 +206,11 @@ public class ClassUtil {
                 }
             }
         }
+    }
+
+    public static Field[] getDeclaredFields(Class clazz) {
+        Field[] fields = clazz.getFields();
+        Field[] declaredFields = clazz.getDeclaredFields();
+        return Stream.concat(Stream.of(fields), Stream.of(declaredFields)).toArray(Field[]::new);
     }
 }

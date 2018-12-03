@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.eduhzy.rpcutil.annotations.RpcApi;
 import com.eduhzy.rpcutil.annotations.RpcMethod;
 import com.eduhzy.rpcutil.annotations.RpcParam;
+import com.eduhzy.rpcutil.tools.ClassUtil;
 import com.eduhzy.rpcutil.tools.InstanceUtil;
 import com.eduhzy.rpcutil.tools.JsonUtil;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -126,7 +127,7 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
      */
     private String getJsonSample(Class cls, boolean collectionType) throws Exception {
         Object instance = InstanceUtil.newInstance(cls, collectionType);
-        Field[] fields = cls.getDeclaredFields();
+        Field[] fields = ClassUtil.getDeclaredFields(cls);
         // 格式化 json
         String sample = JSON.toJSONString(instance,
                 PrettyFormat, WriteMapNullValue,

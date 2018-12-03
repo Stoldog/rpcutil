@@ -143,10 +143,10 @@ public class JsonUtil {
                         RpcField annotation = field.getAnnotation(RpcField.class);
                         if (annotation != null) {
                             Class cls = annotation.paramClass();
-                            putLineComment(Arrays.copyOfRange(parents, 1, parents.length), cls.getDeclaredFields(), line, key, sb, width);
+                            putLineComment(Arrays.copyOfRange(parents, 1, parents.length), ClassUtil.getDeclaredFields(cls), line, key, sb, width);
                         } else {
                             Class<?> type = field.getType().getComponentType();
-                            putLineComment(Arrays.copyOfRange(parents, 1, parents.length), type.getDeclaredFields(), line, key, sb, width);
+                            putLineComment(Arrays.copyOfRange(parents, 1, parents.length), ClassUtil.getDeclaredFields(type), line, key, sb, width);
                         }
                         return;
                     }
