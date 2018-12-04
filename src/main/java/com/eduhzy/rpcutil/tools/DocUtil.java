@@ -260,6 +260,9 @@ public class DocUtil {
         lines.add("### 接口地址");
         lines.add("    " + interfacePath + rpcApiInfo.getServiceName() + "/" + rpcApiInfo.getModuleName() + "/" + methodInfo.getMethodName() + ".jspx");
         lines.add("");
+        lines.add("### 接口描述");
+        lines.add("    " +methodInfo.getDescription() == null ? "未添加接口描述" : methodInfo.getDescription() );
+        lines.add("");
     }
 
     /**
