@@ -96,8 +96,8 @@ public class JsonUtil {
                     root = removeEnd(root);
                 }
                 sb.append(line).append(NEW_LINE);
-            } else {
-                // 普通节点,需要添加注释的节点
+            } else if (trim.endsWith(",")) {
+                // 普通json节点,需要添加注释的节点
                 String[] split = trim.split(":");
                 String key = split[0].replace("\"", "");
                 String parentsKey = findParentKey(root);
@@ -106,6 +106,9 @@ public class JsonUtil {
                 String[] parents = Arrays.stream(parentsKey.split("-")).filter(StringUtils::isNoneEmpty).toArray(String[]::new);
                 putLineComment(parents, fields, line, key, sb, width);
                 sb.append(NEW_LINE);
+            } else {
+                // 普通节点,类似 true  false
+                sb.append(line).append(NEW_LINE);
             }
         }
 
