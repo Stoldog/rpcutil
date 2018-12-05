@@ -8,6 +8,9 @@ import com.eduhzy.rpcutil.core.RpcParamInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -164,9 +167,29 @@ public class DocUtil {
     private static void putProtoInfoTag(List<String> lines, PrototypeDoc doc) {
         lines.add("## 原型信息");
         lines.add("**原型编号:** " + (doc == null || doc.getPrototypeNo() == null ? "----" : doc.getPrototypeNo()) + "   ");
+        String url = getPrototypeURL(doc);
         String address = PROTO_TYPE_METHOD_LINK.replace("{{methodName}}", doc.getPrototypeName())
-                .replace("{{prototypePath}}", doc.getPrototypeURL());
+                .replace("{{prototypePath}}", url);
         lines.add("**原型地址:** " + address);
+    }
+
+    /**
+     * 获取 原型 地址
+     *
+     * @param doc
+     * @return
+     */
+    private static String getPrototypeURL(PrototypeDoc doc) {
+        String prototypeURL = doc.getPrototypeURL();
+        String ui = prototypeURL.substring(prototypeURL.indexOf("ui"));
+        String url;
+        try {
+            String decode = URLDecoder.decode(ui, "UTF-8");
+            url = prototypeURL.substring(0, prototypeURL.indexOf("ui")) + decode;
+        } catch (UnsupportedEncodingException e) {
+            url = prototypeURL;
+        }
+        return url;
     }
 
     /**
@@ -261,7 +284,7 @@ public class DocUtil {
         lines.add("    " + interfacePath + rpcApiInfo.getServiceName() + "/" + rpcApiInfo.getModuleName() + "/" + methodInfo.getMethodName() + ".jspx");
         lines.add("");
         lines.add("### 接口描述");
-        lines.add("    " +methodInfo.getDescription() == null ? "未添加接口描述" : methodInfo.getDescription() );
+        lines.add("    " + methodInfo.getDescription() == null ? "未添加接口描述" : methodInfo.getDescription());
         lines.add("");
     }
 
