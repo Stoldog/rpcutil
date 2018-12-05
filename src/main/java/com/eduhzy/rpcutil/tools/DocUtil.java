@@ -276,7 +276,7 @@ public class DocUtil {
         lines.add("```");
         lines.add("参数说明");
         for (RpcParamInfo paramInfo : methodInfo.getParamList()) {
-            String line = StringUtil.fillBlank(paramInfo.getName(), 20) + StringUtil.fillBlank(paramInfo.getType(), 20);
+            String line = StringUtil.fillBlank(paramInfo.getName(), 20) + StringUtil.fillBlank(paramInfo.getType(), 20) + StringUtil.fillBlank(paramInfo.getIsTrue() == 0 ? "非必填项" : "必填项", 20) ;
             if (paramInfo.isJsonObj()) {
                 lines.add(line + StringUtil.fillBlank("json 参数说明", 20));
                 lines.add(StringUtil.fillBlank(paramInfo.getDesc(), 20));
