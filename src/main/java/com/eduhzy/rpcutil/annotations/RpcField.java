@@ -23,6 +23,13 @@ public @interface RpcField {
     String description() default "";
 
     /**
+     * 是否 必填
+     *
+     * @return true or false
+     */
+    boolean required() default true;
+
+    /**
      * 参数类型
      *
      * @return

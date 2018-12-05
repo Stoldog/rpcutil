@@ -28,26 +28,28 @@ public class JsonUtil {
     /**
      * 添加 json 字段注释
      *
-     * @param fields filed
-     * @param sample json sample
+     * @param fields       filed
+     * @param sample       json sample
+     * @param needRequired 是否需要必填注释
      * @return json with putLineComment
      * @throws IOException exception
      */
-    public static String putJsonComment(Field[] fields, String sample) throws IOException {
-        return putJsonComment(fields, sample, DEFAULT_WIDTH);
+    public static String putJsonComment(Field[] fields, String sample, boolean needRequired) throws IOException {
+        return putJsonComment(fields, sample, DEFAULT_WIDTH, needRequired);
     }
 
     /**
      * 添加 json 字段注释
      *
-     * @param fields filed
-     * @param sample json sample
-     * @param width  注释与 json 的宽度
+     * @param fields       filed
+     * @param sample       json sample
+     * @param width        注释与 json 的宽度
+     * @param needRequired 是否需要必填注释
      * @return json with putLineComment
      * @throws IOException exception
      */
     @SuppressWarnings("all")
-    public static String putJsonComment(Field[] fields, String sample, int width) throws IOException {
+    public static String putJsonComment(Field[] fields, String sample, int width, boolean needRequired) throws IOException {
         List<String> lines = jsonSampleToLines(sample);
 
         StringBuilder sb = new StringBuilder();
@@ -104,7 +106,7 @@ public class JsonUtil {
 
                 // 该节点的所有父节点
                 String[] parents = Arrays.stream(parentsKey.split("-")).filter(StringUtils::isNoneEmpty).toArray(String[]::new);
-                putLineComment(parents, fields, line, key, sb, width);
+                putLineComment(parents, fields, line, key, sb, width, needRequired);
                 sb.append(NEW_LINE);
             } else {
                 // 普通节点,类似 true  false
@@ -118,14 +120,15 @@ public class JsonUtil {
     /**
      * 添加 每一行的注释
      *
-     * @param parents parents
-     * @param fields  fields
-     * @param line    line
-     * @param key     key
-     * @param sb      stringBuilder
-     * @param width   width
+     * @param parents      parents
+     * @param fields       fields
+     * @param line         line
+     * @param key          key
+     * @param sb           stringBuilder
+     * @param width        width
+     * @param needRequired 是否需要必填注释
      */
-    private static void putLineComment(String[] parents, Field[] fields, String line, String key, StringBuilder sb, int width) {
+    private static void putLineComment(String[] parents, Field[] fields, String line, String key, StringBuilder sb, int width, boolean needRequired) {
         if (parents.length == 0) {
             // 最顶层
             for (Field field : fields) {
@@ -133,7 +136,13 @@ public class JsonUtil {
                     RpcField annotation = field.getAnnotation(RpcField.class);
                     String msg = "// ";
                     if (annotation != null) {
-                        msg = msg + annotation.description();
+
+                        // 当参数时,添加是否时必填信息
+                        if (needRequired) {
+                            String required = annotation.required() ? "  必填项 " : "非必填项";
+                            msg = msg + required;
+                        }
+                        msg = StringUtil.fillBlank(msg, 10) + annotation.description();
                     }
                     sb.append(StringUtil.fillBlank(line, width)).append(msg);
                     return;
@@ -146,10 +155,10 @@ public class JsonUtil {
                         RpcField annotation = field.getAnnotation(RpcField.class);
                         if (annotation != null) {
                             Class cls = annotation.paramClass();
-                            putLineComment(Arrays.copyOfRange(parents, 1, parents.length), ClassUtil.getDeclaredFields(cls), line, key, sb, width);
+                            putLineComment(Arrays.copyOfRange(parents, 1, parents.length), ClassUtil.getDeclaredFields(cls), line, key, sb, width, needRequired);
                         } else {
                             Class<?> type = field.getType().getComponentType();
-                            putLineComment(Arrays.copyOfRange(parents, 1, parents.length), ClassUtil.getDeclaredFields(type), line, key, sb, width);
+                            putLineComment(Arrays.copyOfRange(parents, 1, parents.length), ClassUtil.getDeclaredFields(type), line, key, sb, width, needRequired);
                         }
                         return;
                     }

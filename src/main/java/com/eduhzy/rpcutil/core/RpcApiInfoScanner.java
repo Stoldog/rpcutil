@@ -99,7 +99,7 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
             paramInfo.setDesc(rpcParam != null ? rpcParam.description() : "");
             if (rpcParam != null && rpcParam.cls() != Object.class) {
                 try {
-                    String json = getJsonSample(rpcParam.cls(), rpcParam.collectionType());
+                    String json = getJsonSample(rpcParam.cls(), rpcParam.collectionType(), true);
                     paramInfo.setDesc(json);
                     paramInfo.setJsonObj(true);
                 } catch (Exception e) {
@@ -122,10 +122,11 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
      *
      * @param cls
      * @param collectionType
+     * @param needRequired
      * @return
      * @throws Exception
      */
-    private String getJsonSample(Class cls, boolean collectionType) throws Exception {
+    private String getJsonSample(Class cls, boolean collectionType, boolean needRequired) throws Exception {
         Object instance = InstanceUtil.newInstance(cls, collectionType);
         Field[] fields = ClassUtil.getDeclaredFields(cls);
         // 格式化 json
@@ -134,7 +135,7 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
                 WriteNullNumberAsZero, WriteNullListAsEmpty,
                 WriteNullStringAsEmpty, WriteNullBooleanAsFalse);
 
-        return JsonUtil.putJsonComment(fields, sample);
+        return JsonUtil.putJsonComment(fields, sample, needRequired);
 
     }
 
@@ -148,7 +149,7 @@ public class RpcApiInfoScanner implements ApiScanner<RpcApiInfo> {
         Class clazz = rpcMethod.returnClass();
         if (clazz != Object.class) {
             try {
-                String json = getJsonSample(clazz, rpcMethod.collectionType());
+                String json = getJsonSample(clazz, rpcMethod.collectionType(), false);
                 methodInfo.setReturnJson(json);
             } catch (Exception e) {
                 e.printStackTrace();
