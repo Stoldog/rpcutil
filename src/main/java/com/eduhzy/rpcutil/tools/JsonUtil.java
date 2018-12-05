@@ -96,7 +96,7 @@ public class JsonUtil {
                     root = removeEnd(root);
                 }
                 sb.append(line).append(NEW_LINE);
-            } else if (trim.endsWith(",")) {
+            } else if (trim.contains(":")) {
                 // 普通json节点,需要添加注释的节点
                 String[] split = trim.split(":");
                 String key = split[0].replace("\"", "");
